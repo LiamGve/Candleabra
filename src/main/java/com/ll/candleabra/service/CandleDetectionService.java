@@ -29,6 +29,10 @@ public class CandleDetectionService {
             if (isHammerCandlestick(one, two, three, four, five)) {
                 candlesFound.put(stocksInTimeOrder.get(i - 1).getKey(), CandleType.HAMMER);
             }
+
+            if (isShootingStarCandlestick(one, two, three, four, five)) {
+                candlesFound.put(stocksInTimeOrder.get(i - 1).getKey(), CandleType.SHOOTING_STAR);
+            }
         }
 
         return candlesFound;
@@ -53,7 +57,7 @@ public class CandleDetectionService {
         final boolean oneBackFall = oneBack.close() < oneBack.open();
         final boolean lowestCurrentLow = potentialHammer.low() < oneBack.low() && potentialHammer.low() < twoBack.low();
 
-        final float bodySize = potentialHammer.open() - potentialHammer.close();
+        final float bodySize = potentialHammer.close() - potentialHammer.open();
 
         final boolean lowAtLeastTwiceSizeOfBody = (potentialHammer.open() - (bodySize * 2)) > potentialHammer.low();
         final boolean volumeIncreased = potentialHammer.volume() > oneBack.volume();
@@ -82,8 +86,27 @@ public class CandleDetectionService {
      * short-sell signal forms when the low of the following candlestick price is broken with trail stops at the high of
      * the body or tail of the shooting star candlestick.
      */
-    private static boolean isShootingStarCandlestick() {
-        return false;
+    private static boolean isShootingStarCandlestick(final StockIncrementInformation threeBack,
+                                                     final StockIncrementInformation twoBack,
+                                                     final StockIncrementInformation oneBack,
+                                                     final StockIncrementInformation potentialShootingStar,
+                                                     final StockIncrementInformation confirmShootingStar) {
+        final boolean threeBackRise = threeBack.close() > threeBack.open();
+        final boolean twoBackRise = twoBack.close() > twoBack.open();
+        final boolean oneBackRise = oneBack.close() > oneBack.open();
+        final boolean highestCurrentHigh = potentialShootingStar.high() > oneBack.high() && potentialShootingStar.high() > twoBack.high();
+
+        final float bodySize = potentialShootingStar.open() - potentialShootingStar.close();
+
+        final boolean highAtLeastTwiceSizeOfBody = (potentialShootingStar.close() + (bodySize * 2)) < potentialShootingStar.low();
+        final boolean confirmHammer = confirmShootingStar.high() < potentialShootingStar.close();
+
+        return threeBackRise &&
+                twoBackRise &&
+                oneBackRise &&
+                highestCurrentHigh &&
+                highAtLeastTwiceSizeOfBody &&
+                confirmHammer;
     }
 
     /**
