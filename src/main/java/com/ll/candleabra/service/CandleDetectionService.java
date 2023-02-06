@@ -27,11 +27,27 @@ public class CandleDetectionService {
             final StockIncrementInformation five = stocksInTimeOrder.get(i).getValue();
 
             if (isHammerCandlestick(one, two, three, four, five)) {
-                candlesFound.put(stocksInTimeOrder.get(i - 1).getKey(), CandleType.HAMMER);
+                candlesFound.put(stocksInTimeOrder.get(i).getKey(), CandleType.HAMMER);
             }
 
             if (isShootingStarCandlestick(one, two, three, four, five)) {
-                candlesFound.put(stocksInTimeOrder.get(i - 1).getKey(), CandleType.SHOOTING_STAR);
+                candlesFound.put(stocksInTimeOrder.get(i).getKey(), CandleType.SHOOTING_STAR);
+            }
+
+            if (isBullishDojiCandlestick(one, two, three, four, five)) {
+                candlesFound.put(stocksInTimeOrder.get(i).getKey(), CandleType.BULLISH_DOJI);
+            }
+
+            if (isBearishDojiCandlestick(one, two, three, four, five)) {
+                candlesFound.put(stocksInTimeOrder.get(i).getKey(), CandleType.BEARISH_DOJI);
+            }
+
+            if (isBullishEngulfingCandlestick(one, two, three, four, five)) {
+                candlesFound.put(stocksInTimeOrder.get(i).getKey(), CandleType.BULLISH_ENGULFING);
+            }
+
+            if (isBearishEngulfingCandlestick(one, two, three, four, five)) {
+                candlesFound.put(stocksInTimeOrder.get(i).getKey(), CandleType.BEARISH_ENGULFING);
             }
         }
 
@@ -57,7 +73,7 @@ public class CandleDetectionService {
         final boolean oneBackFall = oneBack.close() < oneBack.open();
         final boolean lowestCurrentLow = potentialHammer.low() < oneBack.low() && potentialHammer.low() < twoBack.low();
 
-        final float bodySize = potentialHammer.close() - potentialHammer.open();
+        final float bodySize = Math.abs(potentialHammer.close() - potentialHammer.open());
 
         final boolean lowAtLeastTwiceSizeOfBody = (potentialHammer.open() - (bodySize * 2)) > potentialHammer.low();
         final boolean volumeIncreased = potentialHammer.volume() > oneBack.volume();
@@ -96,9 +112,9 @@ public class CandleDetectionService {
         final boolean oneBackRise = oneBack.close() > oneBack.open();
         final boolean highestCurrentHigh = potentialShootingStar.high() > oneBack.high() && potentialShootingStar.high() > twoBack.high();
 
-        final float bodySize = potentialShootingStar.open() - potentialShootingStar.close();
+        final float bodySize = Math.abs(potentialShootingStar.open() - potentialShootingStar.close());
 
-        final boolean highAtLeastTwiceSizeOfBody = (potentialShootingStar.close() + (bodySize * 2)) < potentialShootingStar.low();
+        final boolean highAtLeastTwiceSizeOfBody = (potentialShootingStar.close() + (bodySize * 2)) < potentialShootingStar.high();
         final boolean confirmHammer = confirmShootingStar.high() < potentialShootingStar.close();
 
         return threeBackRise &&
@@ -121,8 +137,55 @@ public class CandleDetectionService {
      * If the preceding candles are bearish then the doji candlestick will likely form a bullish reversal. Long triggers form
      * above the body or candlestick high with a trail stop under the low of the doji.
      */
-    private static boolean isDojiCandlestick() {
-        return false;
+    private static boolean isBullishDojiCandlestick(final StockIncrementInformation threeBack,
+                                                    final StockIncrementInformation twoBack,
+                                                    final StockIncrementInformation oneBack,
+                                                    final StockIncrementInformation potentialDoji,
+                                                    final StockIncrementInformation next) {
+        final boolean threeBackRise = threeBack.close() > threeBack.open();
+        final boolean twoBackRise = twoBack.close() > twoBack.open();
+        final boolean oneBackRise = oneBack.close() > oneBack.open();
+
+        final boolean isNoBodyOrVerysmallbody = Math.abs(potentialDoji.close() - potentialDoji.open()) < 2;
+        final float bodySize = Math.abs(potentialDoji.open() - potentialDoji.close());
+        // wick and tail are at least 8 times the body size away from the body
+        final boolean longWickAndTail = potentialDoji.high() > (potentialDoji.close() + (bodySize * 8)) && potentialDoji.low() < (potentialDoji.close() - (bodySize * 8));
+
+        final boolean confirmDoji = next.close() < potentialDoji.close();
+
+        return threeBackRise &&
+                twoBackRise &&
+                oneBackRise &&
+                isNoBodyOrVerysmallbody &&
+                longWickAndTail &&
+                confirmDoji;
+    }
+
+    /**
+     * See: isBullishDojiCandlestick
+     */
+    private static boolean isBearishDojiCandlestick(final StockIncrementInformation threeBack,
+                                                    final StockIncrementInformation twoBack,
+                                                    final StockIncrementInformation oneBack,
+                                                    final StockIncrementInformation potentialDoji,
+                                                    final StockIncrementInformation next) {
+        final boolean threeBackFall = threeBack.close() < threeBack.open();
+        final boolean twoBackFall = twoBack.close() < twoBack.open();
+        final boolean oneBackFall = oneBack.close() < oneBack.open();
+
+        final boolean isNoBodyOrVerysmallbody = Math.abs(potentialDoji.close() - potentialDoji.open()) < 2;
+        final float bodySize = Math.abs(potentialDoji.open() - potentialDoji.close());
+        // wick and tail are at least 8 times the body size away from the body
+        final boolean longWickAndTail = potentialDoji.high() > (potentialDoji.close() + (bodySize * 8)) && potentialDoji.low() < (potentialDoji.close() - (bodySize * 8));
+
+        final boolean confirmDoji = next.open() > potentialDoji.open();
+
+        return threeBackFall &&
+                twoBackFall &&
+                oneBackFall &&
+                isNoBodyOrVerysmallbody &&
+                longWickAndTail &&
+                confirmDoji;
     }
 
     /**
@@ -137,16 +200,25 @@ public class CandleDetectionService {
      * the average when bullish engulfing candles form to be most effective. The buy trigger forms when the next candlestick exceeds
      * the high of the bullish engulfing candlestick.
      */
-    private static boolean isBullishEngulfingCandlestick() {
-        return false;
+    private static boolean isBullishEngulfingCandlestick(final StockIncrementInformation twoBack,
+                                                         final StockIncrementInformation oneBack,
+                                                         final StockIncrementInformation potentialEngulfing,
+                                                         final StockIncrementInformation next,
+                                                         final StockIncrementInformation confirmEngulf) {
+        final boolean twoBackRise = twoBack.close() > twoBack.open();
+        final boolean oneBackRise = oneBack.close() > oneBack.open();
+
+        final boolean isEngulfing = next.close() > potentialEngulfing.open() && next.open() < potentialEngulfing.close();
+
+        final boolean confirm = confirmEngulf.close() > next.high();
+        return twoBackRise &&
+                oneBackRise &&
+                isEngulfing &&
+                confirm;
     }
 
     /**
-     * Like a massive tidal wave that completely engulfs an island, the bearish engulfing candlestick completely swallows the range
-     * of the preceding green candlestick. This is a strong price reversal candlestick. The bearish engulfing candlestick body eclipses
-     * the body of the prior green candle. Even stronger bearish engulfing candlesticks will have bodies that consume the full preceding
-     * candlestick including the upper and lower shadows. These candlesticks can be signs of enormous selling activity on a panic reversal
-     * from bullish to bearish sentiment.
+     * Inverse of bullish engulfing. @See {isBullishEngulfingCandlestick}
      *
      * The preceding green candle keeps unassuming buyers optimism, as it should be trading near the top of an up trend. The bearish
      * engulfing candle will actually open up higher giving longs hope for another climb as it initially indicates more bullish sentiment.
@@ -162,8 +234,21 @@ public class CandleDetectionService {
      * average daily trading volume to have the most impact. Algorithm programs are notorious for painting the tape at the end of the day
      * with a mis-tick to close out with a fake engulfing candle to trap the bears.
      */
-    private static boolean isBearishEngulfingCandlestick() {
-        return false;
+    private static boolean isBearishEngulfingCandlestick(final StockIncrementInformation threeBack,
+                                                         final StockIncrementInformation twoBack,
+                                                         final StockIncrementInformation oneBack,
+                                                         final StockIncrementInformation potentialEngulfing,
+                                                         final StockIncrementInformation next) {
+        final boolean threeBackFall = threeBack.close() < threeBack.open();
+        final boolean twoBackFall = twoBack.close() < twoBack.open();
+        final boolean oneBackFall = oneBack.close() < oneBack.open();
+
+        final boolean isEngulfing = next.open() < potentialEngulfing.close() && next.close() > potentialEngulfing.open();
+
+        return threeBackFall &&
+                twoBackFall &&
+                oneBackFall &&
+                isEngulfing;
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.ll.candleabra.controller;
 
+import com.ll.candleabra.model.MarketOutcome;
 import com.ll.candleabra.service.StockEngineService;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,9 +19,10 @@ public class ControllerV1 {
         this.stockEngineService = stockEngineService;
     }
 
-    @GetMapping("/{shortCode}")
+    @GetMapping("/{shortCode}/{investmentAmount}")
     @ResponseStatus(HttpStatus.OK)
-    public void getStockTickerInformation(@PathVariable final String shortCode) {
-        stockEngineService.processStock(shortCode);
+    public MarketOutcome getStockTickerInformation(@PathVariable final String shortCode,
+                                                   @PathVariable final Float investmentAmount) {
+        return stockEngineService.processStock(shortCode, investmentAmount);
     }
 }

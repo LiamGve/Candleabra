@@ -3,7 +3,8 @@ package com.ll.candleabra.model;
 public enum CandleType {
     HAMMER,
     SHOOTING_STAR,
-    DOJI,
+    BEARISH_DOJI,
+    BULLISH_DOJI,
     BULLISH_ENGULFING,
     BEARISH_ENGULFING,
     BULLISH_HARAMI,
