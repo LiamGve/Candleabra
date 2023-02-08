@@ -10,5 +10,6 @@ public enum CandleType {
     BULLISH_HARAMI,
     BEARISH_HARAMI,
     HANGING_MAN,
-    DARK_CLOUD_COVER
+    DARK_CLOUD_COVER,
+    NOTHING
 }

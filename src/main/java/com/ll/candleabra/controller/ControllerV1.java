@@ -1,16 +1,11 @@
 package com.ll.candleabra.controller;
 
-import com.ll.candleabra.model.MarketOutcome;
+import com.ll.candleabra.model.WebSocketMessage;
 import com.ll.candleabra.service.StockEngineService;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.stereotype.Controller;
 
-@RestController
-@RequestMapping("/api/v1")
+@Controller
 public class ControllerV1 {
 
     private final StockEngineService stockEngineService;
@@ -19,10 +14,11 @@ public class ControllerV1 {
         this.stockEngineService = stockEngineService;
     }
 
-    @GetMapping("/{shortCode}/{investmentAmount}")
-    @ResponseStatus(HttpStatus.OK)
-    public MarketOutcome getStockTickerInformation(@PathVariable final String shortCode,
-                                                   @PathVariable final Float investmentAmount) {
-        return stockEngineService.processStock(shortCode, investmentAmount);
+    @MessageMapping("/start")
+    public String greeting(WebSocketMessage webSocketMessage) {
+        stockEngineService.processStock(
+                webSocketMessage.shortCode(),
+                webSocketMessage.investmentAmount());
+        return "process-started";
     }
 }

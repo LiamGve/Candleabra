@@ -30,7 +30,7 @@ public class StockInformationClient {
 
     public StockIntraDayResponse getSockInformationFor(final String shortCode) {
         try {
-            return objectMapper.readValue(MOCK_3, StockIntraDayResponse.class);
+            return objectMapper.readValue(MOCK_5, StockIntraDayResponse.class);
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }

@@ -16,6 +16,8 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'com.google.guava:guava:31.1-jre'
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+	implementation 'org.apache.commons:commons-collections4:4.0'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 

@@ -11,6 +11,38 @@ import java.util.Map;
 
 public class CandleDetectionService {
 
+    public static CandleType detectCandleType(final StockIncrementInformation one,
+                                              final StockIncrementInformation two,
+                                              final StockIncrementInformation three,
+                                              final StockIncrementInformation four,
+                                              final StockIncrementInformation five) {
+        if (isHammerCandlestick(one, two, three, four, five)) {
+            return CandleType.HAMMER;
+        }
+
+        if (isShootingStarCandlestick(one, two, three, four, five)) {
+            return CandleType.SHOOTING_STAR;
+        }
+
+        if (isBullishDojiCandlestick(one, two, three, four, five)) {
+            return CandleType.BULLISH_DOJI;
+        }
+
+        if (isBearishDojiCandlestick(one, two, three, four, five)) {
+            return CandleType.BEARISH_DOJI;
+        }
+
+        if (isBullishEngulfingCandlestick(one, two, three, four, five)) {
+            return CandleType.BULLISH_ENGULFING;
+        }
+
+        if (isBearishEngulfingCandlestick(one, two, three, four, five)) {
+            return CandleType.BEARISH_ENGULFING;
+        }
+
+        return CandleType.NOTHING;
+    }
+
     public static Map<LocalDateTime, CandleType> detectCandleTypeAtTime(final Map<LocalDateTime, StockIncrementInformation> stockIncrementInformationMap) {
         final Map<LocalDateTime, CandleType> candlesFound = new HashMap<>();
 
@@ -93,7 +125,7 @@ public class CandleDetectionService {
      * of a hammer candle. The star should form after at least three or more subsequent green candles indicating a
      * rising price and demand. Eventually, the buyers lose patience and chase the price to new highs (of the sequence)
      * before realizing they overpaid.
-     *
+     * <p>
      * The upper shadow (also known as a wick) should generally be twice as large as the body. This indicates the last
      * of the frenzied buyers have entered the stock just as profit takers unload their positions followed by short-sellers
      * pushing the price down to close the candle near or below the open. This in essence, traps the late buyers who chased
@@ -130,10 +162,10 @@ public class CandleDetectionService {
      * The candle has the same (or close to) open and closing price with long shadows. It looks like a cross, but it can also
      * have a very tiny body. A doji is a sign of indecision but also a proverbial line in the sand. Since the doji is typically
      * a reversal candle, the direction of the preceding candles can give an early indication of which way the reversal will go.
-     *
+     * <p>
      * If the preceding candles are bullish before forming the doji, the next candle close under the body low triggers a
      * sell/short-sell signal on the break of the doji candlestick lows with trail stops above the doji highs.
-     *
+     * <p>
      * If the preceding candles are bearish then the doji candlestick will likely form a bullish reversal. Long triggers form
      * above the body or candlestick high with a trail stop under the low of the doji.
      */
@@ -192,7 +224,7 @@ public class CandleDetectionService {
      * A bullish engulfing candlestick is a large bodied green candle that completely engulfs the full range of the preceding red
      * candle. The larger the body, the more extreme the reversal becomes. The body should completely engulf the preceding red
      * candle body.
-     *
+     * <p>
      * The most effective bullish engulfing candlesticks form at the tail end of a downtrend to trigger a sharp reversal bounce
      * that overwhelms the short-sellers causing a panic short covering buying frenzy. This motivates bargain hunters to come off
      * the fence further adding to the buying pressure. Bullish engulfing candles are potential reversal signals on downtrends and
@@ -219,7 +251,7 @@ public class CandleDetectionService {
 
     /**
      * Inverse of bullish engulfing. @See {isBullishEngulfingCandlestick}
-     *
+     * <p>
      * The preceding green candle keeps unassuming buyers optimism, as it should be trading near the top of an up trend. The bearish
      * engulfing candle will actually open up higher giving longs hope for another climb as it initially indicates more bullish sentiment.
      * However, the sellers come in very strong and extreme fashion driving down the price through the opening level, which starts to stir
@@ -258,7 +290,7 @@ public class CandleDetectionService {
      * should trading well within the range of the engulfing candle. The subtleness of the small body keeps the short-sellers in a
      * complacent mode as they assume the stock will drop again, but instead it stabilizes before forming a reversal bounce that takes the
      * short-seller by surprise as the stock reverses back up.
-     *
+     * <p>
      * The harami is a subtle clue that often keeps sellers complacent until the trend slowly reverses. It is not as intimidating or
      * dramatic as the bullish engulfing candle. The subtleness of the bullish harami candlestick is what makes it very dangerous for
      * short-sellers as the reversal happens gradually and then accelerates quickly. A buy long trigger forms when the next candle rises
@@ -273,7 +305,7 @@ public class CandleDetectionService {
      * of the harami candle, like David versus Goliath. These form at the top of uptrends as the preceding green candle makes a new high
      * with a large body, before the small harami candlestick forms as buying pressure gradually dissipates. Due to the gradual nature of
      * the buying slow down, the longs assume the pullback is merely a pause before the up trend resumes.
-     *
+     * <p>
      * As the bearish harami candlestick closes, the next candle closes lower which starts to concern the longs. When the low of the
      * preceding engulfing candle broken, it triggers a panic sell-off as longs run for the exits to curtail further losses. The
      * conventional short-sell triggers form when the low of the engulfing candle is breached and stops can be placed above the high of
@@ -289,15 +321,15 @@ public class CandleDetectionService {
      * very small upper shadow. It is differs from a doji since it has a body that is formed at the top of the range. For some reason, the
      * buyers thwarted a potential shooting star and lifted the candle to close at the upper range of the candle to maintain the bullish
      * sentiment, often times artificially. However, the truth hits when the next candle closes under the hanging man as selling accelerates.
-     *
+     * <p>
      * Hanging man candles are most effective at the peak of parabolic like price spikes composed of four or more consecutive green candles.
      * Most bearish reversal candles will form on shooting stars and doji candlesticks. Hanging man candles are uncommon as they are a sign
      * of a large buyer that gets trapped trying to support the momentum or an attempt the paint the tape to generate more liquidity to sell into.
-     *
+     * <p>
      * A hanging man candlestick signals a potential peak of an uptrend as buyers who chased the price look down and wonder why they chased the
      * price so high. It brings to mind the old road runner cartoons where Wile E. Coyote would be chasing the Road Runner and before he knew it,
      * he realized he overstepped the cliff when he looks down, right before he plunges.
-     *
+     * <p>
      * Short-sell triggers signal when the low of the hanging man candlestick is breached with trail stops placed above the high of the hanging
      * man candle.
      */
@@ -312,7 +344,7 @@ public class CandleDetectionService {
      * that close below the mid-point of the prior candlestick body. This is what distinguishes from a doji, shooting star or hanging man bearish
      * reversal pattern. The prior candle, dark cloud candle and the following confirmation candle compose the three-candle pattern. The preceding
      * candlesticks should be at least three consecutive green candles leading up the dark cloud cover candlestick.
-     *
+     * <p>
      * The selling overwhelms and traps the new buyers. If the next candle fails to make a new high (above the dark cloud cover candlestick) then
      * it sets up a short-sell trigger when the low of the third candlestick is breached. This opens up a trap door that indicates panic selling
      * as longs evacuate the burning theater in a frenzied attempt to curtail losses. Short-sell signals trigger when the low of the third candle

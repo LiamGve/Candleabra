@@ -21,6 +21,7 @@ public class MapperConfiguration {
         final ObjectMapper objectMapper = new ObjectMapper();
 
         final SimpleModule module = new SimpleModule();
+        objectMapper.registerModule(new JavaTimeModule());
         module.addKeyDeserializer(LocalDateTime.class, new KeyDeserializer() {
             @Override
             public Object deserializeKey(String key, DeserializationContext ctxt) {
