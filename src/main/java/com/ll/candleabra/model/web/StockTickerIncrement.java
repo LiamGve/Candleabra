@@ -15,7 +15,7 @@ public record StockTickerIncrement(float open,
                                    CandleType candlePattern,
                                    Action action,
                                    List<OwnedStock> investments,
-                                   float liqudCash) {
+                                   float liquidCash) {
     public enum Action {
         BUY,
         SELL,

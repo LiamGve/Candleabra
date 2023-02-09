@@ -10,6 +10,7 @@ h1 {
 h2 {
     font-size: 1.25em;
 }
+
 input {
     border: 0.5px solid #888;
     padding: 10px;
@@ -24,8 +25,63 @@ button {
     width: 15%;
 }
 
-#nav-bar, #heading {
+#nav-bar, .heading {
     text-align: center;
     padding-bottom: 20px;
     padding-top: 20px;
+}
+
+#tracker {
+    background-color: aliceblue;
+    text-align: center;
+    width: 10%;
+    margin: 50px auto;
+    border-radius: 4px;
+    padding: 40px;
+}
+
+#liquid {
+    margin-bottom: 5px;
+}
+
+#main {
+    display: inline-block;
+    width: 85%;
+}
+
+#log {
+    display: inline-block;
+    width: 14.7%;
+    height: 100%;
+    vertical-align: top;
+    border-left: 0.5px solid #888;
+    overflow-y: scroll;
+}
+
+#log-list {
+    list-style: none;
+    padding-right: 35px;
+}
+
+li > label, li > p {
+    display: inline-block;
+    width: 50%;
+}
+
+li > p {
+    margin: 0;
+}
+
+li {
+    background-color: aliceblue;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+#buy {
+    background-color: #ebfbee;
+}
+
+#sell {
+    background-color: #fff0f6;
 }

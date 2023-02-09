@@ -1,8 +1,10 @@
 (function (global, factory) {
-    typeof exports === 'object' && typeof module !== 'undefined' ? factory(require('chart.js'), require('chart.js/helpers')) :
-        typeof define === 'function' && define.amd ? define(['chart.js', 'chart.js/helpers'], factory) :
-            (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.Chart, global.Chart.helpers));
-}(this, (function (chart_js, helpers) { 'use strict';
+
+    global = globalThis;
+    factory(global.Chart, global.Chart.helpers);
+
+}(this, (function (chart_js, helpers) {
+    'use strict';
 
     /**
      * Computes the "optimal" sample size to maintain bars equally sized while preventing overlap.
@@ -35,7 +37,7 @@
             const parsed = me.getParsed(index);
             const axis = me._cachedMeta.iScale.axis;
 
-            const {o, h, l, c, v} = parsed;
+            const {o, h, l, c, v, candle} = parsed;
             const value = `Open: ${o}  High: ${h}  Low: ${l}  Close: ${c} Volume: ${v}`;
 
             return {
@@ -55,11 +57,6 @@
             return values;
         }
 
-        /**
-         * Implement this ourselves since it doesn't handle high and low values
-         * https://github.com/chartjs/Chart.js/issues/7328
-         * @protected
-         */
         getMinMax(scale) {
             const meta = this._cachedMeta;
             const _parsed = meta._parsed;
@@ -93,6 +90,7 @@
             for (let i = 0; i < meta.data.length; ++i) {
                 pixels.push(iScale.getPixelForValue(me.getParsed(i)[axis]));
             }
+
             const barThickness = opts.barThickness;
             const min = computeMinSampleSize(iScale, pixels);
             return {
@@ -106,9 +104,6 @@
             };
         }
 
-        /**
-         * @protected
-         */
         calculateElementProperties(index, ruler, reset, options) {
             const me = this;
             const vscale = me._cachedMeta.vScale;
@@ -119,6 +114,7 @@
             const high = vscale.getPixelForValue(data.h);
             const low = vscale.getPixelForValue(data.l);
             const close = vscale.getPixelForValue(data.c);
+            const candle = data.candle;
 
             return {
                 base: reset ? base : low,
@@ -128,7 +124,8 @@
                 open,
                 high,
                 low,
-                close
+                close,
+                candle
             };
         }
 
@@ -193,15 +190,11 @@
                     }
 
                     let val = DateTime.fromMillis(firstTick.value);
-                    if ((majorUnit === 'minute' && val.second === 0)
+                    firstTick.major = (majorUnit === 'minute' && val.second === 0)
                         || (majorUnit === 'hour' && val.minute === 0)
                         || (majorUnit === 'day' && val.hour === 9)
                         || (majorUnit === 'month' && val.day <= 3 && val.weekday === 1)
-                        || (majorUnit === 'year' && val.month === 1)) {
-                        firstTick.major = true;
-                    } else {
-                        firstTick.major = false;
-                    }
+                        || (majorUnit === 'year' && val.month === 1);
                     let lastMajor = val.get(majorUnit);
 
                     for (let i = 1; i < ticks.length; i++) {
@@ -231,7 +224,7 @@
                             return chart_js.defaults.plugins.tooltip.callbacks.label(ctx);
                         }
 
-                        const {o, h, l, c, v} = point;
+                        const {o, h, l, c, v, candle} = point;
 
                         return `Open: ${o}  High: ${h}  Low: ${l}  Close: ${c} Volume: ${v}`;
                     }
@@ -247,6 +240,7 @@
             up: 'rgba(80, 160, 115, 1)',
             down: 'rgba(215, 85, 65, 1)',
             unchanged: 'rgba(90, 90, 90, 1)',
+            candleBuy: 'rgb(255,233,82)',
         }
     };
 
@@ -333,8 +327,7 @@
     class CandlestickElement extends FinancialElement {
         draw(ctx) {
             const me = this;
-
-            const {x, open, high, low, close, volume} = me;
+            const {x, open, high, low, close, v, candle} = me;
 
             let borderColors = me.borderColor;
             if (typeof borderColors === 'string') {
@@ -346,6 +339,23 @@
             }
 
             let borderColor;
+
+            // const scale = this.scale;
+            if (candle !== "NOTHING") {
+                // draw line
+                ctx.beginPath();
+                ctx.moveTo(x, ctx.canvas.clientHeight);
+                ctx.strokeStyle = 'rgba(85, 85, 85, 0.33)';
+                ctx.lineWidth = me.width
+                ctx.lineTo(x, 0);
+                ctx.stroke();
+
+                ctx.textAlign = 'left';
+                ctx.fillStyle = 'rgba(0,0,0,0.62)';
+                ctx.fillText(candle, x + me.width, ctx.canvas.clientHeight - 35);
+                ctx.closePath();
+            }
+
             if (close < open) {
                 borderColor = helpers.valueOrDefault(borderColors ? borderColors.up : undefined, globalOpts$1.elements.candlestick.borderColor);
                 ctx.fillStyle = helpers.valueOrDefault(me.color ? me.color.up : undefined, globalOpts$1.elements.candlestick.color.up);
@@ -392,12 +402,10 @@
 
             for (let i = start; i < count; i++) {
                 const options = sharedOptions || me.resolveDataElementOptions(i, mode);
-
                 const baseProperties = me.calculateElementProperties(i, ruler, mode === 'reset', options);
                 const properties = {
                     ...baseProperties,
                     datasetLabel: dataset.label || '',
-                    // label: '', // to get label value please use dataset.data[index].label
 
                     // Appearance
                     color: dataset.color,
@@ -424,8 +432,7 @@
     class OhlcElement extends FinancialElement {
         draw(ctx) {
             const me = this;
-
-            const {x, open, high, low, close, volume} = me;
+            const {x, open, high, low, close, v, candle} = me;
 
             const armLengthRatio = helpers.valueOrDefault(me.armLengthRatio, globalOpts.elements.ohlc.armLengthRatio);
             let armLength = helpers.valueOrDefault(me.armLength, globalOpts.elements.ohlc.armLength);

@@ -1,9 +1,7 @@
 package com.ll.candleabra.service;
 
-import com.google.common.collect.Lists;
 import com.ll.candleabra.client.StockInformationClient;
 import com.ll.candleabra.model.CandleType;
-import com.ll.candleabra.model.MarketOutcome;
 import com.ll.candleabra.model.OwnedStock;
 import com.ll.candleabra.model.StockIncrementInformation;
 import com.ll.candleabra.model.web.StockIntraDayResponse;
@@ -17,7 +15,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.ll.candleabra.model.CandleType.BEARISH_DOJI;
@@ -58,61 +55,62 @@ public class StockEngineService {
         stocksInTimeOrder.sort(Map.Entry.comparingByKey());
 
         stocksInTimeOrder.forEach(entry -> {
-            try {
-                Thread.sleep(1000);
-                sw.add(entry.getValue());
+            sw.add(entry.getValue());
 
-                final CandleType candleType;
-                if (sw.size() == 5) {
-                    LinkedList<StockIncrementInformation> window = sw.getWindow();
-                    candleType = CandleDetectionService.detectCandleType(window.remove(), window.remove(), window.remove(), window.remove(), window.remove());
-                    log.info("These candles were found for {}: {} (time={})", shortCode, candleType, entry.getKey());
+            final CandleType candleType;
+            if (sw.size() == 5) {
+                LinkedList<StockIncrementInformation> window = sw.getWindow();
+                candleType = CandleDetectionService.detectCandleType(window.remove(), window.remove(), window.remove(), window.remove(), window.remove());
+                log.info("These candles were found for {}: {} (time={})", shortCode, candleType, entry.getKey());
+            } else {
+                candleType = CandleType.NOTHING;
+            }
+
+
+            float price = entry.getValue().close();
+
+            StockTickerIncrement.Action action = NOTHING;
+
+            if (HAMMER.equals(candleType) || BEARISH_DOJI.equals(candleType) || BEARISH_ENGULFING.equals(candleType)) {
+                log.info("Logging buy at {}", price);
+                float amount = (float) Math.floor(currentMoney.get() / price);
+                if (currentMoney.get() >= (price * amount) && amount != 0f) {
+                    currentMoney.set(currentMoney.get() - (price * amount));
+                    stockBought.add(new OwnedStock(shortCode, amount, price));
+                    action = BUY;
                 } else {
-                    candleType = CandleType.NOTHING;
+                    log.warn("Not enough liquid cash ({}) to purchase this amount of stock {} (at ${})", currentMoney.get(), amount, price);
                 }
+            } else if (SHOOTING_STAR.equals(candleType) || BULLISH_DOJI.equals(candleType) || BULLISH_ENGULFING.equals(candleType)) {
+                log.info("Logigng sale at {}", price);
+                if (!isEmpty(stockBought)) {
+                    for (OwnedStock stockOwned : stockBought) {
+                        float moneyMade = (price - stockOwned.price()) * stockOwned.amount();
+                        float moneyOriginallyInvested = stockOwned.price() * stockOwned.amount();
 
-
-                float price = entry.getValue().close();
-
-                StockTickerIncrement.Action action = NOTHING;
-
-                if (HAMMER.equals(candleType) || BEARISH_DOJI.equals(candleType) || BEARISH_ENGULFING.equals(candleType)) {
-                    log.info("Logging buy at {}", price);
-                    float amount = (float) Math.floor(currentMoney.get() / price);
-                    if (currentMoney.get() >= (price * amount) && amount != 0f) {
-                        currentMoney.set(currentMoney.get() - (price * amount));
-                        stockBought.add(new OwnedStock(shortCode, amount, price));
-                        action = BUY;
-                    } else {
-                        log.warn("Not enough liquid cash ({}) to purchase this amount of stock {} (at ${})", currentMoney.get(), amount, price);
+                        currentMoney.set(currentMoney.get() + moneyMade + moneyOriginallyInvested);
                     }
-                } else if (SHOOTING_STAR.equals(candleType) || BULLISH_DOJI.equals(candleType) || BULLISH_ENGULFING.equals(candleType)) {
-                    log.info("Logigng sale at {}", price);
-                    if (!isEmpty(stockBought)) {
-                        for (OwnedStock stockOwned : stockBought) {
-                            float moneyMade = (price - stockOwned.price()) * stockOwned.amount();
-                            float moneyOriginallyInvested = stockOwned.price() * stockOwned.amount();
-
-                            currentMoney.set(currentMoney.get() + moneyMade + moneyOriginallyInvested);
-                        }
-                        stockBought.clear();
-                        action = SELL;
-                    } else {
-                        log.warn("Nothing to sell...");
-                    }
+                    stockBought.clear();
+                    action = SELL;
+                } else {
+                    log.warn("Nothing to sell...");
                 }
+            }
 
-                final StockTickerIncrement si = new StockTickerIncrement(
-                        entry.getValue().open(),
-                        entry.getValue().close(),
-                        entry.getValue().high(),
-                        entry.getValue().low(),
-                        entry.getValue().volume(),
-                        entry.getKey(),
-                        candleType,
-                        action,
-                        stockBought,
-                        currentMoney.get());
+            final StockTickerIncrement si = new StockTickerIncrement(
+                    entry.getValue().open(),
+                    entry.getValue().close(),
+                    entry.getValue().high(),
+                    entry.getValue().low(),
+                    entry.getValue().volume(),
+                    entry.getKey(),
+                    candleType,
+                    action,
+                    stockBought,
+                    currentMoney.get());
+
+            try {
+                Thread.sleep(500);
                 topicResponseService.sendStockTick(si);
             } catch (InterruptedException e) {
                 e.printStackTrace();

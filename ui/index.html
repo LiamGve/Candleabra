@@ -1,7 +1,6 @@
 <html>
     <head>
         <title>Candleabra</title>
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/luxon@1.26.0"></script>
@@ -11,20 +10,40 @@
         <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
-        <div id="heading">
-            <h1>Candleabra</h1>
-        </div>
-        <div id="nav-bar">
-            <input type="text" placeholder="Stock" id="stock"/>
-            <input type="number" placeholder="Amount" id="investmentAmount"/>
-            <button id="submit" onclick="connect()">Go</button>
-        </div>
+        <span id="main">
+            <div class="heading">
+                <h1>Candleabra</h1>
+            </div>
 
-        <div style="width: 100%">
-            <canvas id="chart"></canvas>
-        </div>
+            <div id="nav-bar">
+                <input type="text" placeholder="Stock" id="stock"/>
+                <input type="number" placeholder="Amount" id="investmentAmount"/>
+                <button id="submit" onclick="connect()">Go</button>
+            </div>
 
-        <div id="candle"></div>
+            <div style="width: 90%; margin: auto;">
+                <canvas id="chart"></canvas>
+            </div>
+
+            <div id="tracker">
+                <div id="liquid">Liquid Cash 0.00</div>
+            </div>
+
+        </span>
+        <span id="log">
+            <div class="heading">
+                <h1>Buy / Sell Log</h1>
+            </div>
+            <ul id="log-list">
+<!--                <li>-->
+<!--                    <label>Type</label><p>Buy</p>-->
+<!--                    <label>Amount</label><p>$2345234.00</p>-->
+<!--                    <label>Price</label><p>$23423.00</p>-->
+<!--                    <label>Stock</label><p>TSLA</p>-->
+<!--                    <label>Time</label><p>2023-02-09 19:40</p>-->
+<!--                </li>-->
+            </ul>
+        </span>
         <script src="index.js"></script>
     </body>
 </html>
