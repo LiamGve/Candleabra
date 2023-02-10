@@ -1,6 +1,6 @@
 package com.ll.candleabra.service;
 
-import com.ll.candleabra.model.web.StockTickerIncrement;
+import com.ll.candleabra.model.web.response.StockTickerIncrement;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
 public class TopicResponseService {

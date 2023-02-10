@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -25,7 +26,8 @@ public class MapperConfiguration {
         module.addKeyDeserializer(LocalDateTime.class, new KeyDeserializer() {
             @Override
             public Object deserializeKey(String key, DeserializationContext ctxt) {
-                return LocalDateTime.parse(key, DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                final LocalDate ld = LocalDate.parse(key, DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                return LocalDateTime.of(ld, LocalDateTime.now().toLocalTime());
             }
         });
         objectMapper.registerModule(module);

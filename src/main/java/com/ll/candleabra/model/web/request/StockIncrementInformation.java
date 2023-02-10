@@ -1,4 +1,4 @@
-package com.ll.candleabra.model;
+package com.ll.candleabra.model.web.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

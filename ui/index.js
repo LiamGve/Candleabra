@@ -79,9 +79,10 @@ const pushElementToChartData = (res) => {
     };
     chart.update();
 
-    document.getElementById("liquid").innerText = "Liquid Cash $" + message.liquidCash;
+    document.getElementById("liquid").innerText = "Liquid Cash: $" + message.liquidCash;
+    document.getElementById("owned-stock").innerText = "Owned Stock: " + JSON.stringify(message.investments);
 
-    if (message.action !== 'NOTHING') {
+    if (message.action.type !== 'NOTHING') {
         createLogItem(message, date);
     }
 };
@@ -91,11 +92,14 @@ const createLogItem = (stock, date) => {
 
     const li = document.createElement("li");
 
-    li.id = stock.action;
+    li.className = stock.action.type;
     li.innerHTML = `
-        <label>Type</label><p>${stock.action}</p>
+        <label>Type</label><p>${stock.action.type}</p>
+        <label>Amount</label><p>${stock.action.amount}</p>
+        <label>Price</label><p>$${stock.action.price}</p>
+        <label>Stock</label><p>${stock.action.stock}</p>
         <label>Time</label><p>${date.toISOString().replace(/T/, " ").replace(/:00.000Z/, "")}</p>
     `;
 
-    list.appendChild(li);
+    list.prepend(li);
 }

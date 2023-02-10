@@ -1,6 +1,6 @@
 package com.ll.candleabra.test;
 
-import com.ll.candleabra.model.StockIncrementInformation;
+import com.ll.candleabra.model.web.request.StockIncrementInformation;
 
 import java.time.LocalDateTime;
 import java.util.Map;

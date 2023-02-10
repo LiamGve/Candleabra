@@ -2,7 +2,7 @@ package com.ll.candleabra.client;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Resources;
-import com.ll.candleabra.model.web.StockIntraDayResponse;
+import com.ll.candleabra.model.web.request.StockIntraDayResponse;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.IOException;

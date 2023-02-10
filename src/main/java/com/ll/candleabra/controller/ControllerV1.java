@@ -1,6 +1,6 @@
 package com.ll.candleabra.controller;
 
-import com.ll.candleabra.model.WebSocketMessage;
+import com.ll.candleabra.model.web.request.WebSocketMessage;
 import com.ll.candleabra.service.StockEngineService;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.stereotype.Controller;
@@ -15,7 +15,7 @@ public class ControllerV1 {
     }
 
     @MessageMapping("/start")
-    public String greeting(WebSocketMessage webSocketMessage) {
+    public String startTailingStock(WebSocketMessage webSocketMessage) {
         stockEngineService.processStock(
                 webSocketMessage.shortCode(),
                 webSocketMessage.investmentAmount());

@@ -1,7 +1,7 @@
 package com.ll.candleabra.service;
 
 import com.ll.candleabra.model.CandleType;
-import com.ll.candleabra.model.StockIncrementInformation;
+import com.ll.candleabra.model.StockCandleItem;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -11,11 +11,11 @@ import java.util.Map;
 
 public class CandleDetectionService {
 
-    public static CandleType detectCandleType(final StockIncrementInformation one,
-                                              final StockIncrementInformation two,
-                                              final StockIncrementInformation three,
-                                              final StockIncrementInformation four,
-                                              final StockIncrementInformation five) {
+    public static CandleType detectCandleType(final StockCandleItem one,
+                                              final StockCandleItem two,
+                                              final StockCandleItem three,
+                                              final StockCandleItem four,
+                                              final StockCandleItem five) {
         if (isHammerCandlestick(one, two, three, four, five)) {
             return CandleType.HAMMER;
         }
@@ -43,20 +43,20 @@ public class CandleDetectionService {
         return CandleType.NOTHING;
     }
 
-    public static Map<LocalDateTime, CandleType> detectCandleTypeAtTime(final Map<LocalDateTime, StockIncrementInformation> stockIncrementInformationMap) {
+    public static Map<LocalDateTime, CandleType> detectCandleTypeAtTime(final Map<LocalDateTime, StockCandleItem> StockCandleItemMap) {
         final Map<LocalDateTime, CandleType> candlesFound = new HashMap<>();
 
-        final List<Map.Entry<LocalDateTime, StockIncrementInformation>> stocksInTimeOrder = new ArrayList<>(stockIncrementInformationMap.entrySet());
+        final List<Map.Entry<LocalDateTime, StockCandleItem>> stocksInTimeOrder = new ArrayList<>(StockCandleItemMap.entrySet());
 
         stocksInTimeOrder.sort(Map.Entry.comparingByKey());
 
         // Sliding window of 5 increments to use as data to determine candle pattern (if any)
         for (int i = 4; i < stocksInTimeOrder.size(); i++) {
-            final StockIncrementInformation one = stocksInTimeOrder.get(i - 4).getValue();
-            final StockIncrementInformation two = stocksInTimeOrder.get(i - 3).getValue();
-            final StockIncrementInformation three = stocksInTimeOrder.get(i - 2).getValue();
-            final StockIncrementInformation four = stocksInTimeOrder.get(i - 1).getValue();
-            final StockIncrementInformation five = stocksInTimeOrder.get(i).getValue();
+            final StockCandleItem one = stocksInTimeOrder.get(i - 4).getValue();
+            final StockCandleItem two = stocksInTimeOrder.get(i - 3).getValue();
+            final StockCandleItem three = stocksInTimeOrder.get(i - 2).getValue();
+            final StockCandleItem four = stocksInTimeOrder.get(i - 1).getValue();
+            final StockCandleItem five = stocksInTimeOrder.get(i).getValue();
 
             if (isHammerCandlestick(one, two, three, four, five)) {
                 candlesFound.put(stocksInTimeOrder.get(i).getKey(), CandleType.HAMMER);
@@ -95,11 +95,11 @@ public class CandleDetectionService {
      * increase also helps to solidify the hammer. To confirm the hammer candle, it is important for the
      * next candle to close above the low of the hammer candle and preferably above the body.
      */
-    private static boolean isHammerCandlestick(final StockIncrementInformation threeBack,
-                                               final StockIncrementInformation twoBack,
-                                               final StockIncrementInformation oneBack,
-                                               final StockIncrementInformation potentialHammer,
-                                               final StockIncrementInformation next) {
+    private static boolean isHammerCandlestick(final StockCandleItem threeBack,
+                                               final StockCandleItem twoBack,
+                                               final StockCandleItem oneBack,
+                                               final StockCandleItem potentialHammer,
+                                               final StockCandleItem next) {
         final boolean threeBackFall = threeBack.close() < threeBack.open();
         final boolean twoBackFall = twoBack.close() < twoBack.open();
         final boolean oneBackFall = oneBack.close() < oneBack.open();
@@ -134,11 +134,11 @@ public class CandleDetectionService {
      * short-sell signal forms when the low of the following candlestick price is broken with trail stops at the high of
      * the body or tail of the shooting star candlestick.
      */
-    private static boolean isShootingStarCandlestick(final StockIncrementInformation threeBack,
-                                                     final StockIncrementInformation twoBack,
-                                                     final StockIncrementInformation oneBack,
-                                                     final StockIncrementInformation potentialShootingStar,
-                                                     final StockIncrementInformation confirmShootingStar) {
+    private static boolean isShootingStarCandlestick(final StockCandleItem threeBack,
+                                                     final StockCandleItem twoBack,
+                                                     final StockCandleItem oneBack,
+                                                     final StockCandleItem potentialShootingStar,
+                                                     final StockCandleItem confirmShootingStar) {
         final boolean threeBackRise = threeBack.close() > threeBack.open();
         final boolean twoBackRise = twoBack.close() > twoBack.open();
         final boolean oneBackRise = oneBack.close() > oneBack.open();
@@ -169,11 +169,11 @@ public class CandleDetectionService {
      * If the preceding candles are bearish then the doji candlestick will likely form a bullish reversal. Long triggers form
      * above the body or candlestick high with a trail stop under the low of the doji.
      */
-    private static boolean isBullishDojiCandlestick(final StockIncrementInformation threeBack,
-                                                    final StockIncrementInformation twoBack,
-                                                    final StockIncrementInformation oneBack,
-                                                    final StockIncrementInformation potentialDoji,
-                                                    final StockIncrementInformation next) {
+    private static boolean isBullishDojiCandlestick(final StockCandleItem threeBack,
+                                                    final StockCandleItem twoBack,
+                                                    final StockCandleItem oneBack,
+                                                    final StockCandleItem potentialDoji,
+                                                    final StockCandleItem next) {
         final boolean threeBackRise = threeBack.close() > threeBack.open();
         final boolean twoBackRise = twoBack.close() > twoBack.open();
         final boolean oneBackRise = oneBack.close() > oneBack.open();
@@ -196,11 +196,11 @@ public class CandleDetectionService {
     /**
      * See: isBullishDojiCandlestick
      */
-    private static boolean isBearishDojiCandlestick(final StockIncrementInformation threeBack,
-                                                    final StockIncrementInformation twoBack,
-                                                    final StockIncrementInformation oneBack,
-                                                    final StockIncrementInformation potentialDoji,
-                                                    final StockIncrementInformation next) {
+    private static boolean isBearishDojiCandlestick(final StockCandleItem threeBack,
+                                                    final StockCandleItem twoBack,
+                                                    final StockCandleItem oneBack,
+                                                    final StockCandleItem potentialDoji,
+                                                    final StockCandleItem next) {
         final boolean threeBackFall = threeBack.close() < threeBack.open();
         final boolean twoBackFall = twoBack.close() < twoBack.open();
         final boolean oneBackFall = oneBack.close() < oneBack.open();
@@ -232,11 +232,11 @@ public class CandleDetectionService {
      * the average when bullish engulfing candles form to be most effective. The buy trigger forms when the next candlestick exceeds
      * the high of the bullish engulfing candlestick.
      */
-    private static boolean isBullishEngulfingCandlestick(final StockIncrementInformation twoBack,
-                                                         final StockIncrementInformation oneBack,
-                                                         final StockIncrementInformation potentialEngulfing,
-                                                         final StockIncrementInformation next,
-                                                         final StockIncrementInformation confirmEngulf) {
+    private static boolean isBullishEngulfingCandlestick(final StockCandleItem twoBack,
+                                                         final StockCandleItem oneBack,
+                                                         final StockCandleItem potentialEngulfing,
+                                                         final StockCandleItem next,
+                                                         final StockCandleItem confirmEngulf) {
         final boolean twoBackRise = twoBack.close() > twoBack.open();
         final boolean oneBackRise = oneBack.close() > oneBack.open();
 
@@ -266,11 +266,11 @@ public class CandleDetectionService {
      * average daily trading volume to have the most impact. Algorithm programs are notorious for painting the tape at the end of the day
      * with a mis-tick to close out with a fake engulfing candle to trap the bears.
      */
-    private static boolean isBearishEngulfingCandlestick(final StockIncrementInformation threeBack,
-                                                         final StockIncrementInformation twoBack,
-                                                         final StockIncrementInformation oneBack,
-                                                         final StockIncrementInformation potentialEngulfing,
-                                                         final StockIncrementInformation next) {
+    private static boolean isBearishEngulfingCandlestick(final StockCandleItem threeBack,
+                                                         final StockCandleItem twoBack,
+                                                         final StockCandleItem oneBack,
+                                                         final StockCandleItem potentialEngulfing,
+                                                         final StockCandleItem next) {
         final boolean threeBackFall = threeBack.close() < threeBack.open();
         final boolean twoBackFall = twoBack.close() < twoBack.open();
         final boolean oneBackFall = oneBack.close() < oneBack.open();

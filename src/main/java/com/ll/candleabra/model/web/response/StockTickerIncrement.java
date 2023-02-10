@@ -1,5 +1,6 @@
-package com.ll.candleabra.model.web;
+package com.ll.candleabra.model.web.response;
 
+import com.ll.candleabra.model.Action;
 import com.ll.candleabra.model.CandleType;
 import com.ll.candleabra.model.OwnedStock;
 
@@ -16,10 +17,4 @@ public record StockTickerIncrement(float open,
                                    Action action,
                                    List<OwnedStock> investments,
                                    float liquidCash) {
-    public enum Action {
-        BUY,
-        SELL,
-        SHORT,
-        NOTHING
-    }
 }
