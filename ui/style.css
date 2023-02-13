@@ -1,6 +1,7 @@
 * {
     font-family: Sans-Serif, serif;
     color: #666666;
+    overflow-y: hidden;
 }
 
 h1 {
@@ -29,10 +30,13 @@ button:hover {
     background-color: #84bdf1;
 }
 
-#nav-bar, .heading {
+#nav-bar {
     text-align: center;
     padding-bottom: 20px;
-    padding-top: 20px;
+}
+
+.heading {
+    text-align: center;
 }
 
 #tracker {
@@ -43,6 +47,7 @@ button:hover {
     margin: 50px auto;
     border-radius: 4px;
     padding: 40px;
+    overflow-y: auto;
 }
 
 #liquid {
@@ -51,7 +56,7 @@ button:hover {
 
 #main {
     display: inline-block;
-    width: 85%;
+    width: 84%;
 }
 
 #log {
@@ -60,7 +65,8 @@ button:hover {
     height: 100%;
     vertical-align: top;
     border-left: 0.5px solid #888;
-    overflow-y: scroll;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #log-list {
@@ -105,7 +111,7 @@ li {
 
 #buy, #sell {
     width: 30%;
-    height: 100px;
+    height: 90px;
     color: #666666;
     border-radius: 5px;
     font-size: xx-large;

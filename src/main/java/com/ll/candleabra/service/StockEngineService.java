@@ -72,7 +72,6 @@ public class StockEngineService {
                 candleType = CandleType.NOTHING;
             }
 
-
             float price = entry.getValue().close();
 
             final Action action;

@@ -98,7 +98,7 @@ const createLogItem = (stock, date) => {
         <label>Amount</label><p>${stock.action.amount}</p>
         <label>Price</label><p>$${stock.action.price}</p>
         <label>Stock</label><p>${stock.action.stock}</p>
-        <label>Time</label><p>${date.toISOString().replace(/T/, " ").replace(/:00.000Z/, "")}</p>
+        <label>Time</label><p>${date.toISOString().replace(/T/, " ").replace(/.000Z/, "")}</p>
     `;
 
     list.prepend(li);
